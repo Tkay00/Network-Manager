@@ -1,0 +1,108 @@
+{
+    "rules": {
+        "rule1": [
+            {
+                "name":"AllowHttpsInbound",
+                "properties":{
+                    "access": "AlwaysAllow",
+                    "description": "Allow HTTPS Inbound",
+                    "protocol": "TCP",
+                    "priority": "120",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["Internet"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes":[ "*"],
+                    "destinationPortRanges": ["443"]
+                }
+            },
+            {
+                "name":"AllowRDPInbound",
+                "properties": { 
+                    "access": "Allow",
+                    "description": "Allow RDP",
+                    "protocol": "TCP",
+                    "priority": "100",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["*"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes":[ "*"],
+                    "destinationPortRanges": ["3389"]
+                }
+            },
+            {
+                "name": "Deny_All",
+                "properties": {
+                    "access": "Deny",
+                    "description": "",
+                    "protocol": "*",
+                    "priority": "400",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["*"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes": ["*"],
+                    "destinationPortRanges": ["0-65535"]
+                }
+            }
+        ],
+        "rule2": [
+            {
+                "name":"AllowRDPInbound",
+                "properties": { 
+                    "access": "Allow",
+                    "description": "Allow RDP",
+                    "protocol": "TCP",
+                    "priority": "100",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["*"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes":[ "*"],
+                    "destinationPortRanges": ["3389"]
+                }
+            },
+            {
+                "name": "Deny_All",
+                "properties": {
+                    "access": "Deny",
+                    "description": "",
+                    "protocol": "*",
+                    "priority": "400",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["*"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes": ["*"],
+                    "destinationPortRanges": ["0-65535"]
+                }
+            }
+        ],
+        "rule3": [
+            {
+                "name":"AllowHttpsInbound",
+                "properties":{
+                    "access": "AlwaysAllow",
+                    "description": "Allow HTTPS Inbound",
+                    "protocol": "TCP",
+                    "priority": "120",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["Internet"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes":[ "*"],
+                    "destinationPortRanges": ["443"]
+                }
+            },
+            {
+                "name": "Deny_All",
+                "properties": {
+                    "access": "Deny",
+                    "description": "",
+                    "protocol": "*",
+                    "priority": "400",
+                    "direction": "Inbound",
+                    "sourceAddressPrefixes": ["*"],
+                    "sourcePortRanges": ["0-65535"],
+                    "destinationAddressPrefixes": ["*"],
+                    "destinationPortRanges": ["0-65535"]
+                }
+            }
+        ]
+    }
+}
