@@ -10,7 +10,7 @@ commit the config using - az network manager post-commit --resource-group rg-bmt
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //                                   == Base Parameters ==                                       //
 
-param resourceNameEnv string = 'sbx'
+param resourceNameEnv string = 'dev'
 param locationName string = 'westus2'
 param tags object = {
     purpose: 'Bicep Module Testing (network/virtual-network-manager)'
@@ -137,7 +137,7 @@ var vNets = {
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-09-01' = [for vNet in items(vNets): {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = [for vNet in items(vNets): {
   name: vNet.value.name
   location: locationName
   tags: vNet.value.tags
@@ -151,7 +151,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-09-01' = [for vN
 // == Log Analytics Workspace == 
 var logAnalyticsWorkspaceName = toLower('log-${uniqueString(resourceGroup().id)}')
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: logAnalyticsWorkspaceName
   location: locationName
   tags: tags
@@ -204,22 +204,25 @@ module vnetManager '../main.bicep'= {
           {
             name:'prdVnets'
           }
+          {
+            name:'nonPrdVnets'
+          }
         ]
-        rulesTemplate: 'rule1'
+        ruleTemplate: 'rule1'
       }
       {
         name: 'ops2'
         targetGroups: [{
           name:'prdVnets'
         }]
-        rulesTemplate: 'rule2'
+        ruleTemplate: 'rule2'
       }
       {
         name: 'ops3'
         targetGroups: [{
           name:'nonPrdVnets'
         }]
-        rulesTemplate: 'rule3'
+        ruleTemplate: 'rule3'
       }
     ]
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id

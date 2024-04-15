@@ -73,8 +73,7 @@ param securityAdminDescription string = 'Pembina Pipeline Security Configuration
 param ruleCollections array = []
 
 var networkGroupDescription = 'The use case of the network group'
-
-var ruleTemplate = (loadJsonContent('data/ruleTemplate.json')).rules
+// var ruleTemplate = (loadJsonContent('data/ruleTemplate.json')).rules
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //                                        ==  Parameters =
@@ -83,7 +82,7 @@ var ruleTemplate = (loadJsonContent('data/ruleTemplate.json')).rules
 //                                         == Resources ==
 
 // == networkManager == 
-resource networkManager 'Microsoft.Network/networkManagers@2023-09-01' = {
+resource networkManager 'Microsoft.Network/networkManagers@2023-05-01' = {
   name: resourceName
   location: locationName
   tags: tags
@@ -98,7 +97,7 @@ resource networkManager 'Microsoft.Network/networkManagers@2023-09-01' = {
 }  
 
 // == networkGroup ==
-resource networkGroup 'Microsoft.Network/networkManagers/networkGroups@2023-09-01' = [for group in networkGroups: {
+resource networkGroup 'Microsoft.Network/networkManagers/networkGroups@2023-05-01' = [for group in networkGroups: {
   parent: networkManager
   name: '${resourceName}-ng-${group}'
   properties: {
@@ -107,7 +106,7 @@ resource networkGroup 'Microsoft.Network/networkManagers/networkGroups@2023-09-0
 }]
 
 // == SecurityConfig ==
-resource securityAdminConfig 'Microsoft.Network/networkManagers/securityAdminConfigurations@2023-09-01' = {
+resource securityAdminConfig 'Microsoft.Network/networkManagers/securityAdminConfigurations@2023-05-01' = {
   parent: networkManager
   name: '${resourceName}-securityConfig'
   properties: {
@@ -119,7 +118,7 @@ resource securityAdminConfig 'Microsoft.Network/networkManagers/securityAdminCon
 }
 
 //== ruleCollection == correct original
-resource ruleCollection 'Microsoft.Network/networkManagers/securityAdminConfigurations/ruleCollections@2023-09-01' = [for collection in ruleCollections: {
+resource ruleCollection 'Microsoft.Network/networkManagers/securityAdminConfigurations/ruleCollections@2023-05-01' = [for collection in ruleCollections: {
   parent: securityAdminConfig
   name: '${resourceName}-rc-${collection.name}'
   properties: {
@@ -130,14 +129,16 @@ resource ruleCollection 'Microsoft.Network/networkManagers/securityAdminConfigur
 }]  
 
 // == securityAdminRules
-resource securityRule01 'Microsoft.Network/networkManagers/securityAdminConfigurations/ruleCollections/rules@2023-09-01' = [for (collection, i) in ruleCollections: {
+var ruleTemplate = (loadJsonContent('data/ruleTemplate.json')).rules
+
+resource securityRule01 'Microsoft.Network/networkManagers/securityAdminConfigurations/ruleCollections/rules@2023-05-01' = [for (collection, i) in ruleCollections: {
   parent: ruleCollection[i]
-  name: contains(collection, 'rulesTemplate') ? ruleTemplate[collection.rulesTemplate] : (contains(collection, 'rules') ? collection.rules : [])          
+  name: contains(collection, 'rulesTemplate') ? ruleTemplate[collection.ruleTemplate] : []         
   kind: 'Custom'
-  properties: contains(collection, 'rulesTemplate') ? ruleTemplate[collection.rulesTemplate] : (contains(collection, 'rules') ? collection.rules : [])
+  properties: contains(collection, 'rulesTemplate') ? ruleTemplate[collection.ruleTemplate] : []
 }]
 
-// == Diagnostics
+// == Diagnostics 
 resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (!empty(logAnalyticsWorkspaceId)) {
   name: 'default'
   scope: networkManager
