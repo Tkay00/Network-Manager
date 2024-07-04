@@ -1,0 +1,14 @@
+{
+    "locations": {
+        "canadacentral": "cac",
+        "canadaeast": "cae",
+        "centralus": "uc",
+        "eastus": "ue",
+        "eastus2": "ue2",
+        "northcentralus": "unc",
+        "southcentralus": "usc",
+        "westcentralus": "uwc",
+        "westus2": "uw2",
+        "westus3": "uw3"
+    }
+}

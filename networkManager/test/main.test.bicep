@@ -10,104 +10,11 @@ commit the config using - az network manager post-commit --resource-group rg-bmt
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //                                   == Base Parameters ==                                       //
 
-param resourceNameEnv string = 'dev'
+param resourceNameEnv string = 'sbx'
 param locationName string = 'westus2'
 param tags object = {
     purpose: 'Bicep Module Testing (network/virtual-network-manager)'
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//                                    == Parameters ==
-
-param resourceGrpName string = resourceGroup().name
-
-var netwrkMgrName = vnetManager.outputs.virtualNetworkManagerName
-var policies = [
-  {
-    name: 'Add all virtual networks to a network group'
-    description: 'Adds all the virtual network within a specific target scope to a network group.'
-    networkGroupId: '${subscription().id}/resourceGroups/${resourceGrpName}/providers/Microsoft.Network/networkManagers/${netwrkMgrName}/networkGroups/${'${netwrkMgrName}-ng-${networkGroups[0]}'}'
-    policyRulePattern: {
-      allOf: [
-        {
-          field: 'type'
-          equals: 'Microsoft.Network/virtualNetworks'
-        }
-        {
-          anyOf: [
-            {
-              field: 'tags[\'environment\']'
-              exists: 'true'
-            }
-            {
-              field:  'tags[\'environment\']'
-              exists: 'false'
-            }
-          ]
-        }
-      ]
-    }
-  }
-  {
-    name: 'Add production virtual network to a network group'
-    description: 'Adds only production virtual networks within a specific target scope to a network group.'
-    networkGroupId: '${subscription().id}/resourceGroups/${resourceGrpName}/providers/Microsoft.Network/networkManagers/${netwrkMgrName}/networkGroups/${'${netwrkMgrName}-ng-${networkGroups[1]}'}'
-    policyRulePattern: {
-      allOf: [
-        {
-          field: 'type'
-          equals: 'Microsoft.Network/virtualNetworks'
-        }
-        {
-          anyOf: [
-            {
-              field: 'tags[\'environment\']'
-              equals: 'prd'
-
-            }
-            {
-              field: 'tags[\'environment\']'
-              equals: 'prod'
-            }
-            {
-              field: 'tags[\'environment\']'
-              equals: 'production'
-            }
-          ]
-        }
-      ]
-    }
-  }
-  {
-    name: 'Add non-production virtual network to a network group'
-    description: 'Adds non-production virtual networks within a specific target scope to a network group.'
-    networkGroupId: '${subscription().id}/resourceGroups/${resourceGrpName}/providers/Microsoft.Network/networkManagers/${netwrkMgrName}/networkGroups/${'${netwrkMgrName}-ng-${networkGroups[2]}'}'
-    policyRulePattern: {
-      allOf: [
-        {
-          field: 'type'
-          equals: 'Microsoft.Network/virtualNetworks'
-        }
-        {
-          allOf: [
-            {
-              field: 'tags[\'environment\']'
-              notEquals: 'prd'
-            }
-            {
-              field: 'tags[\'environment\']'
-              equals:'nonprd'
-            }
-            {
-              field: 'tags[\'environment\']'
-              notEquals: 'production'
-            }
-          ]
-        }
-      ]
-    }
-  }
-]
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                   == Prerequisite Resources ==                               //
@@ -119,25 +26,25 @@ var vNets = {
     tags: {
       environment: 'prd'
     }
-    addressPrefixes: ['192.168.168.0/24']
+    addressPrefixes: ['192.168.165.0/24']
   } 
   vNet2: {
     name: toLower('vNet02-${uniqueString(resourceGroup().id)}')
     tags: {
-      environment: 'nonprd'
+      environment: 'test'
     }
     addressPrefixes: ['192.168.169.0/24']
   }
   vNet3: {
     name: toLower('vNet03-${uniqueString(resourceGroup().id)}')
     tags: {
-      environment: ''
+      environment: 'uat'
     }
     addressPrefixes:['192.168.167.0/24']
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = [for vNet in items(vNets): {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-09-01' = [for vNet in items(vNets): {
   name: vNet.value.name
   location: locationName
   tags: vNet.value.tags
@@ -151,7 +58,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = [for vN
 // == Log Analytics Workspace == 
 var logAnalyticsWorkspaceName = toLower('log-${uniqueString(resourceGroup().id)}')
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: logAnalyticsWorkspaceName
   location: locationName
   tags: tags
@@ -168,15 +75,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//                                == Module Specific Parameters ==
-
-@description('A list of network groups. Usually contain virtual networks to apply configuration at scale')
-param networkGroups array = [
-  'allVnets'
-  'prdVnets'
-  'nonPrdVnets'
-]
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                   == Module Tests ==                                         //
@@ -189,51 +87,50 @@ module vnetManager '../main.bicep'= {
     locationName: locationName
     tags: tags
     networkManagerScopes: {
-      subscriptions: [subscription().id]
+      managementGroups: []
+      subscriptions: [subscription().id] 
     }
-    vnmDescription: 'Azure Virtual Network Manager - Prod'
-    securityAdminDescription: 'CompanyX Security rule'
-    networkGroups: networkGroups
-    ruleCollections: [
+    vnmDescription: 'Company Azure Virtual Network Manager'
+    securityAdminDescription: 'Company Security Configuration'
+    networkGroups: [ 
       {
-        name: 'ops1'
-        targetGroups: [
-          {
-            name:'allVnets'
-          }
-          {
-            name:'prdVnets'
-          }
-          {
-            name:'nonPrdVnets'
-          }
-        ]
-        ruleTemplate: 'rule1'
+        name: 'allVnets'
+        ngDescription: 'All Virtual Networks'
       }
       {
-        name: 'ops2'
+        name: 'prdVnets'
+        ngDescription: 'All Production Virtual Networks'
+      }
+      {
+        name: 'nonPrdVnets'
+        ngDescription: 'All Non-Production Virtual Networks'
+    }]
+    ruleCollections: [
+      {
+        name: 'rcSuffix01'
+        targetGroups: [{
+          name:'allVnets'
+        }
+        {
+          name:'prdVnets'
+        }]
+        ruleC: 'rule1'
+      }
+      {
+        name: 'rcSuffix02'
         targetGroups: [{
           name:'prdVnets'
         }]
-        ruleTemplate: 'rule2'
+        rulenC: 'rule2'
       }
       {
-        name: 'ops3'
+        name: 'rcSuffix03'
         targetGroups: [{
           name:'nonPrdVnets'
         }]
-        ruleTemplate: 'rule3'
+        rulenC: 'rule3'
       }
     ]
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
   }   
-}
-
-// Poliy to add the virtual networks to the network groups. The policy uses tags to add the vnet to the respective network groups
-module vnetManagerPolicy '../data/policy.bicep' = {
-  scope: subscription()
-  name: 'vnetManagerPolicyDeployment-${uniqueString(deployment().name, locationName)}-01'
-  params: {
-    policies: policies
-  }
 }

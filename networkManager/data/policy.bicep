@@ -4,6 +4,12 @@
 targetScope = 'subscription'
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+//                                == Resource Name Gen Parameters ==
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//                                   == Global Parameters ==
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 //                                == Module Specific Parameters ==            
 
 @description('A list of policy definitions applied to the network groups')
@@ -57,3 +63,4 @@ resource policyAssignment 'Microsoft.Authorization/policyAssignments@2023-04-01'
 output policyDefinitionId array = [for (policy, i) in policies: {
   policyDefinitionId: policyDefinition[i].id
 }]
+

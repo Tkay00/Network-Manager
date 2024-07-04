@@ -1,0 +1,11 @@
+{
+    "environments": {
+        "prd": {"abbr": "p"},
+        "dev": {"abbr": "d"},
+        "tst": {"abbr": "t"},
+        "qas": {"abbr": "q"},
+        "uat": {"abbr": "u"},
+        "np": {"abbr":"n"},
+        "sbx": {"abbr": "s"}                     
+    }
+}
